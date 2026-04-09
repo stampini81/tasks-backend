@@ -18,8 +18,9 @@ public class Task {
 	@Column(nullable = false)
 	private LocalDate dueDate;
 	
-	// JPA requires a no-args constructor to instantiate the entity.
-	public Task() {}
+	public Task() {
+		// JPA requires a no-args constructor to instantiate the entity.
+	}
 
 	@Id
 	@GeneratedValue
