@@ -1,15 +1,18 @@
 package br.ce.wcaquino.taskbackend.apitest;
 
-import static io.restassured.module.mockmvc.RestAssuredMockMvc.given;
+import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.Mockito.when;
 
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -23,6 +26,7 @@ import br.ce.wcaquino.taskbackend.controller.RootController;
 import br.ce.wcaquino.taskbackend.controller.TaskController;
 import br.ce.wcaquino.taskbackend.model.Task;
 import br.ce.wcaquino.taskbackend.repo.TaskRepo;
+import io.restassured.RestAssured;
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
 
 public class APITest {
@@ -43,7 +47,7 @@ public class APITest {
     public void deveRetornarHelloWorldNaRaiz() {
         RestAssuredMockMvc.standaloneSetup(new RootController());
 
-        given()
+        io.restassured.module.mockmvc.RestAssuredMockMvc.given()
         .when()
             .get("/")
         .then()
@@ -69,7 +73,7 @@ public class APITest {
         todo.put("task", "Estudar Rest Assured");
         todo.put("dueDate", LocalDate.now().plusDays(1).toString());
 
-        given()
+        io.restassured.module.mockmvc.RestAssuredMockMvc.given()
             .contentType(MediaType.APPLICATION_JSON_VALUE)
             .body(todo)
         .when()
@@ -89,7 +93,7 @@ public class APITest {
         Map<String, Object> todo = new HashMap<>();
         todo.put("dueDate", LocalDate.now().plusDays(1).toString());
 
-        given()
+        io.restassured.module.mockmvc.RestAssuredMockMvc.given()
             .contentType(MediaType.APPLICATION_JSON_VALUE)
             .body(todo)
         .when()
@@ -117,11 +121,39 @@ public class APITest {
                 .setMessageConverters(new MappingJackson2HttpMessageConverter())
                 .build());
 
-        given()
+        io.restassured.module.mockmvc.RestAssuredMockMvc.given()
         .when()
             .get("/todo")
         .then()
             .statusCode(200)
             .body("$", hasSize(2));
+    }
+
+    @Test
+    public void deveConsultarEndpointPublicadoNoTomcat() throws Exception {
+        String endpoint = "http://localhost:8001/tasks-backend/todo";
+        Assume.assumeTrue("Tomcat em localhost:8001 indisponivel para o teste HTTP real.", endpointDisponivel(endpoint));
+
+        RestAssured.baseURI = "http://localhost:8001";
+
+        given()
+        .when()
+            .get("/tasks-backend/todo")
+        .then()
+            .log().all()
+            .statusCode(200);
+    }
+
+    private boolean endpointDisponivel(String endpoint) {
+        try {
+            HttpURLConnection connection = (HttpURLConnection) new URL(endpoint).openConnection();
+            connection.setRequestMethod("GET");
+            connection.setConnectTimeout(2000);
+            connection.setReadTimeout(2000);
+            int status = connection.getResponseCode();
+            return status >= 200 && status < 500;
+        } catch (Exception e) {
+            return false;
+        }
     }
 }
