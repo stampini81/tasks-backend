@@ -13,11 +13,12 @@ public class Task {
 	private Long id;
 	
 	@Column(nullable = false)
-	private String task;
+	private String description;
 	
 	@Column(nullable = false)
 	private LocalDate dueDate;
 	
+	// JPA requires a no-args constructor to instantiate the entity.
 	public Task() {}
 
 	@Id
@@ -31,11 +32,11 @@ public class Task {
 	}
 
 	public String getTask() {
-		return task;
+		return description;
 	}
 
 	public void setTask(String task) {
-		this.task = task;
+		this.description = task;
 	}
 	
 	public LocalDate getDueDate() {
