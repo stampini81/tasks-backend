@@ -160,6 +160,35 @@ pipeline {
             }
         }
 
+        stage('Build Functional Tests') {
+            steps {
+                dir('tasks-functional-tests') {
+                    git branch: 'master', url: 'https://github.com/stampini81/tasks-functional-tests'
+                    script {
+                        if (isUnix()) {
+                            sh 'mvn test-compile'
+                        } else {
+                            bat 'mvn test-compile'
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Functional Tests') {
+            steps {
+                dir('tasks-functional-tests') {
+                    script {
+                        if (isUnix()) {
+                            sh 'mvn test -Dselenium.grid.url=http://localhost:4444 -Dselenium.browser=chrome -Dtasks.frontend.url=http://host.docker.internal:8001/tasks/'
+                        } else {
+                            bat 'mvn test "-Dselenium.grid.url=http://localhost:4444" "-Dselenium.browser=chrome" "-Dtasks.frontend.url=http://host.docker.internal:8001/tasks/"'
+                        }
+                    }
+                }
+            }
+        }
+
         stage('Archive') {
             steps {
                 archiveArtifacts artifacts: 'target/*.war', fingerprint: true
@@ -169,7 +198,7 @@ pipeline {
 
     post {
         always {
-            junit testResults: 'target/surefire-reports/*.xml, tasks-api-test/target/surefire-reports/*.xml', allowEmptyResults: true
+            junit testResults: 'target/surefire-reports/*.xml, tasks-api-test/target/surefire-reports/*.xml, tasks-functional-tests/target/surefire-reports/*.xml', allowEmptyResults: true
             publishHTML(target: [
                 allowMissing: true,
                 alwaysLinkToLastBuild: true,
