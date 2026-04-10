@@ -189,6 +189,13 @@ pipeline {
             }
         }
 
+        stage('Deploy Prod') {
+            steps {
+                bat 'docker-compose build'
+                bat 'docker-compose up -d'
+            }
+        }
+
         stage('Archive') {
             steps {
                 archiveArtifacts artifacts: 'target/*.war', fingerprint: true
