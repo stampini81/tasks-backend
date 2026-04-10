@@ -87,6 +87,21 @@ pipeline {
             }
         }
 
+        stage('API Tests') {
+            steps {
+                dir('tasks-api-test') {
+                    git branch: 'master', url: 'https://github.com/stampini81/tasks-api-test'
+                    script {
+                        if (isUnix()) {
+                            sh 'mvn test -Dtest=APITest'
+                        } else {
+                            bat 'mvn test -Dtest=APITest'
+                        }
+                    }
+                }
+            }
+        }
+
         stage('Archive') {
             steps {
                 archiveArtifacts artifacts: 'target/*.war', fingerprint: true
@@ -96,7 +111,7 @@ pipeline {
 
     post {
         always {
-            junit testResults: 'target/surefire-reports/*.xml', allowEmptyResults: true
+            junit testResults: 'target/surefire-reports/*.xml, tasks-api-test/target/surefire-reports/*.xml', allowEmptyResults: true
             publishHTML(target: [
                 allowMissing: true,
                 alwaysLinkToLastBuild: true,
