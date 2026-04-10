@@ -17,14 +17,26 @@ pipeline {
             }
         }
 
-        stage('Build And Test') {
+        stage('Build Backend') {
             steps {
                 script {
                     if (isUnix()) {
                         sh 'chmod +x mvnw'
-                        sh './mvnw clean verify'
+                        sh './mvnw clean package -DskipTests'
                     } else {
-                        bat 'mvnw.cmd clean verify'
+                        bat 'mvnw.cmd clean package -DskipTests'
+                    }
+                }
+            }
+        }
+
+        stage('Test Backend') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh './mvnw test'
+                    } else {
+                        bat 'mvnw.cmd test'
                     }
                 }
             }
@@ -87,10 +99,56 @@ pipeline {
             }
         }
 
-        stage('API Tests') {
+        stage('Build Frontend') {
+            steps {
+                dir('tasks-frontend') {
+                    git branch: 'master', url: 'https://github.com/stampini81/tasks-frontend'
+                    script {
+                        if (isUnix()) {
+                            sh 'chmod +x mvnw'
+                            sh './mvnw clean package -DskipTests'
+                        } else {
+                            bat 'mvnw.cmd clean package -DskipTests'
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Deploy Frontend') {
+            steps {
+                dir('tasks-frontend') {
+                    deploy adapters: [
+                        tomcat8(
+                            credentialsId: 'TomcatLogin',
+                            path: '',
+                            url: 'http://localhost:8001/'
+                        )
+                    ],
+                    contextPath: 'tasks',
+                    war: 'target/tasks.war'
+                }
+            }
+        }
+
+        stage('Build API Tests') {
             steps {
                 dir('tasks-api-test') {
                     git branch: 'master', url: 'https://github.com/stampini81/tasks-api-test'
+                    script {
+                        if (isUnix()) {
+                            sh 'mvn test-compile'
+                        } else {
+                            bat 'mvn test-compile'
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('API Tests') {
+            steps {
+                dir('tasks-api-test') {
                     script {
                         if (isUnix()) {
                             sh 'mvn test -Dtest=APITest'
