@@ -49,7 +49,7 @@ services:
       BACKEND_PORT: 8080
       APP_VERSION: build_${BUILD_NUMBER:-local}
     ports:
-      - "8001:8080"
+      - "${FRONTEND_PORT:-8002}:8080"
     networks:
       - prod_net_back
       - prod_net_front
