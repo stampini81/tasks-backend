@@ -1,0 +1,63 @@
+services:
+  db:
+    image: postgres:9.6
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: passwd
+      POSTGRES_DB: tasks
+    volumes:
+      - prod_postgresql:/var/lib/postgresql
+      - prod_postgresql_data:/var/lib/postgresql/data
+    networks:
+      - prod_net_back
+
+  backend:
+    image: back_prod:build_${BUILD_NUMBER:-local}
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        WAR_FILE: target/tasks-backend.war
+        CONTEXT: tasks-backend
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      DATABASE_HOST: db
+      DATABASE_PORT: 5432
+      DATABASE_USER: postgres
+      DATABASE_PASSWD: passwd
+      DATABASE_UPDATE: none
+    networks:
+      - prod_net_back
+      - prod_net_front
+
+  frontend:
+    image: front_prod:build_${BUILD_NUMBER:-local}
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        WAR_FILE: tasks-frontend/target/tasks.war
+        CONTEXT: tasks
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      BACKEND_HOST: backend
+      BACKEND_PORT: 8080
+      APP_VERSION: build_${BUILD_NUMBER:-local}
+    ports:
+      - "8001:8080"
+    networks:
+      - prod_net_back
+      - prod_net_front
+
+volumes:
+  prod_postgresql:
+  prod_postgresql_data:
+
+networks:
+  prod_net_back:
+  prod_net_front:
