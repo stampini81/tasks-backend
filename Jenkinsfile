@@ -12,6 +12,7 @@ pipeline {
 
     environment {
         MAVEN_OPTS = '-Dmaven.test.failure.ignore=false'
+        PIPELINE_EMAIL_TO = 'stampini81@gmail.com'
     }
 
     stages {
@@ -269,10 +270,10 @@ pipeline {
             echo 'Pipeline falhou. Verifique os logs e os relatorios publicados.'
         }
         unsuccessful {
-            emailext attachLog: true, body: 'See the attached log below', subject: "Build ${BUILD_NUMBER} has failed", to: 'stampini81@gmail.com'
+            emailext attachLog: true, body: 'See the attached log below', subject: "Build ${BUILD_NUMBER} has failed", to: "${PIPELINE_EMAIL_TO}"
         }
         fixed {
-            emailext attachLog: true, body: 'See the attached log below', subject: "Build ${BUILD_NUMBER} has been fixed", to: 'stampini81@gmail.com'
+            emailext attachLog: true, body: 'See the attached log below', subject: "Build ${BUILD_NUMBER} has been fixed", to: "${PIPELINE_EMAIL_TO}"
         }
     }
 }
