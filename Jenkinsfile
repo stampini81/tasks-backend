@@ -85,6 +85,20 @@ pipeline {
             }
         }
 
+        stage('Start Backend Database') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh 'docker compose up -d db'
+                        sh 'for i in $(seq 1 30); do nc -z 127.0.0.1 5433 && exit 0; sleep 2; done; exit 1'
+                    } else {
+                        bat 'docker-compose up -d db'
+                        bat 'powershell -Command "$maxAttempts = 30; for ($i = 0; $i -lt $maxAttempts; $i++) { if ((Test-NetConnection 127.0.0.1 -Port 5433 -WarningAction SilentlyContinue).TcpTestSucceeded) { exit 0 }; Start-Sleep -Seconds 2 }; exit 1"'
+                    }
+                }
+            }
+        }
+
         stage('Deploy Backend') {
             steps {
                 deploy adapters: [
