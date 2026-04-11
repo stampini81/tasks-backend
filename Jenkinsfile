@@ -238,6 +238,7 @@ pipeline {
     post {
         always {
             junit testResults: 'target/surefire-reports/*.xml, tasks-api-test/target/surefire-reports/*.xml, tasks-functional-tests/target/surefire-reports/*.xml, tasks-functional-tests/target/failsafe-reports/*.xml', allowEmptyResults: true
+            archiveArtifacts artifacts: 'target/tasks-backend.war, tasks-frontend/target/tasks.war', onlyIfSuccessful: true
             publishHTML(target: [
                 allowMissing: true,
                 alwaysLinkToLastBuild: true,
