@@ -1,13 +1,25 @@
+def resolvePipelineBranch() {
+    return env.CHANGE_BRANCH ?:
+        env.BRANCH_NAME ?:
+        (env.GIT_BRANCH ? env.GIT_BRANCH.replaceFirst('^origin/', '').replaceFirst('^refs/heads/', '') : 'master')
+}
+
+def checkoutRepositoryBranch(String repositoryUrl, String targetBranch) {
+    try {
+        git branch: targetBranch, url: repositoryUrl
+        echo "Usando branch ${targetBranch} de ${repositoryUrl}"
+    } catch (Exception ex) {
+        echo "Branch ${targetBranch} nao encontrada em ${repositoryUrl}. Fazendo fallback para master."
+        git branch: 'master', url: repositoryUrl
+    }
+}
+
 pipeline {
     agent any
 
     options {
         disableConcurrentBuilds()
         buildDiscarder(logRotator(numToKeepStr: '10'))
-    }
-
-    parameters {
-        booleanParam(name: 'FORCE_EMAIL_TEST_FAILURE', defaultValue: false, description: 'Forca uma falha controlada para validar o envio de e-mail do pipeline.')
     }
 
     environment {
@@ -19,6 +31,10 @@ pipeline {
         stage('Checkout') {
             steps {
                 checkout scm
+                script {
+                    env.PIPELINE_BRANCH = resolvePipelineBranch()
+                    echo "Pipeline executando a branch ${env.PIPELINE_BRANCH}"
+                }
             }
         }
 
@@ -123,8 +139,8 @@ pipeline {
         stage('Build Frontend') {
             steps {
                 dir('tasks-frontend') {
-                    git branch: 'master', url: 'https://github.com/stampini81/tasks-frontend'
                     script {
+                        checkoutRepositoryBranch('https://github.com/stampini81/tasks-frontend', env.PIPELINE_BRANCH)
                         if (isUnix()) {
                             sh 'chmod +x mvnw'
                             sh './mvnw clean package -DskipTests'
@@ -155,8 +171,8 @@ pipeline {
         stage('Build API Tests') {
             steps {
                 dir('tasks-api-test') {
-                    git branch: 'master', url: 'https://github.com/stampini81/tasks-api-test'
                     script {
+                        checkoutRepositoryBranch('https://github.com/stampini81/tasks-api-test', env.PIPELINE_BRANCH)
                         if (isUnix()) {
                             sh 'mvn test-compile'
                         } else {
@@ -184,8 +200,8 @@ pipeline {
         stage('Build Functional Tests') {
             steps {
                 dir('tasks-functional-tests') {
-                    git branch: 'master', url: 'https://github.com/stampini81/tasks-functional-tests'
                     script {
+                        checkoutRepositoryBranch('https://github.com/stampini81/tasks-functional-tests', env.PIPELINE_BRANCH)
                         if (isUnix()) {
                             sh 'mvn test-compile'
                         } else {
@@ -230,15 +246,6 @@ pipeline {
                         }
                     }
                 }
-            }
-        }
-
-        stage('Email Failure Test') {
-            when {
-                expression { return params.FORCE_EMAIL_TEST_FAILURE }
-            }
-            steps {
-                error('Falha controlada para validar o envio de e-mail do pipeline.')
             }
         }
 
