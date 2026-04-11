@@ -200,12 +200,12 @@ pipeline {
         stage('Health Check') {
             steps {
                 sleep(5)
-                dir('functional-test') {
+                dir('tasks-functional-tests') {
                     script {
                         if (isUnix()) {
-                            sh 'mvn verify -Dskip.surefire.tests'
+                            sh 'mvn verify -Dskip.surefire.tests -Dit.test=br.ce.wcaquino.tasks.prod.HealthCheckTest -Dselenium.grid.url=http://localhost:4444 -Dselenium.browser=chrome -Dtasks.frontend.url=http://host.docker.internal:8002/tasks/'
                         } else {
-                            bat 'mvn verify -Dskip.surefire.tests'
+                            bat 'mvn verify "-Dskip.surefire.tests" "-Dit.test=br.ce.wcaquino.tasks.prod.HealthCheckTest" "-Dselenium.grid.url=http://localhost:4444" "-Dselenium.browser=chrome" "-Dtasks.frontend.url=http://host.docker.internal:8002/tasks/"'
                         }
                     }
                 }
@@ -221,7 +221,7 @@ pipeline {
 
     post {
         always {
-            junit testResults: 'target/surefire-reports/*.xml, tasks-api-test/target/surefire-reports/*.xml, tasks-functional-tests/target/surefire-reports/*.xml, functional-test/target/failsafe-reports/*.xml', allowEmptyResults: true
+            junit testResults: 'target/surefire-reports/*.xml, tasks-api-test/target/surefire-reports/*.xml, tasks-functional-tests/target/surefire-reports/*.xml, tasks-functional-tests/target/failsafe-reports/*.xml', allowEmptyResults: true
             publishHTML(target: [
                 allowMissing: true,
                 alwaysLinkToLastBuild: true,
