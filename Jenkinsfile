@@ -252,5 +252,11 @@ pipeline {
         failure {
             echo 'Pipeline falhou. Verifique os logs e os relatorios publicados.'
         }
+        unsuccessful {
+            emailext attachLog: true, body: 'See the attached log below', subject: "Build ${BUILD_NUMBER} has failed"
+        }
+        fixed {
+            emailext attachLog: true, body: 'See the attached log below', subject: "Build ${BUILD_NUMBER} has been fixed"
+        }
     }
 }
