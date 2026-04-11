@@ -256,10 +256,10 @@ pipeline {
             echo 'Pipeline falhou. Verifique os logs e os relatorios publicados.'
         }
         unsuccessful {
-            emailext attachLog: true, body: 'See the attached log below', subject: "Build ${BUILD_NUMBER} has failed"
+            emailext attachLog: true, body: 'See the attached log below', subject: "Build ${BUILD_NUMBER} has failed", to: 'stampini81@gmail.com'
         }
         fixed {
-            emailext attachLog: true, body: 'See the attached log below', subject: "Build ${BUILD_NUMBER} has been fixed"
+            emailext attachLog: true, body: 'See the attached log below', subject: "Build ${BUILD_NUMBER} has been fixed", to: 'stampini81@gmail.com'
         }
     }
 }
