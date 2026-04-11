@@ -95,7 +95,7 @@ pipeline {
                     } else {
                         bat 'docker-compose up -d db'
                         bat 'powershell -Command "$maxAttempts = 30; for ($i = 0; $i -lt $maxAttempts; $i++) { docker-compose exec -T db pg_isready -U postgres -d tasks *> $null; if ($LASTEXITCODE -eq 0) { exit 0 }; Start-Sleep -Seconds 2 }; exit 1"'
-                        bat 'docker-compose exec -T db psql -U postgres -d tasks -c "ALTER USER postgres WITH PASSWORD ''password'';"'
+                        bat "docker-compose exec -T db psql -U postgres -d tasks -c \"ALTER USER postgres WITH PASSWORD 'password';\""
                     }
                 }
             }
