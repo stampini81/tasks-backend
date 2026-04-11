@@ -6,6 +6,10 @@ pipeline {
         buildDiscarder(logRotator(numToKeepStr: '10'))
     }
 
+    parameters {
+        booleanParam(name: 'FORCE_EMAIL_TEST_FAILURE', defaultValue: false, description: 'Forca uma falha controlada para validar o envio de e-mail do pipeline.')
+    }
+
     environment {
         MAVEN_OPTS = '-Dmaven.test.failure.ignore=false'
     }
@@ -225,6 +229,15 @@ pipeline {
                         }
                     }
                 }
+            }
+        }
+
+        stage('Email Failure Test') {
+            when {
+                expression { return params.FORCE_EMAIL_TEST_FAILURE }
+            }
+            steps {
+                error('Falha controlada para validar o envio de e-mail do pipeline.')
             }
         }
 

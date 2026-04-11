@@ -12,10 +12,8 @@ public class Task {
 
 	private Long id;
 	
-	@Column(nullable = false)
 	private String description;
 	
-	@Column(nullable = false)
 	private LocalDate dueDate;
 	
 	public Task() {
@@ -32,6 +30,7 @@ public class Task {
 		this.id = id;
 	}
 
+	@Column(name = "description", nullable = false)
 	public String getTask() {
 		return description;
 	}
@@ -40,6 +39,7 @@ public class Task {
 		this.description = task;
 	}
 	
+	@Column(nullable = false)
 	public LocalDate getDueDate() {
 		return dueDate;
 	}
