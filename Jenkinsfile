@@ -197,6 +197,21 @@ pipeline {
             }
         }
 
+        stage('Health Check') {
+            steps {
+                sleep(5)
+                dir('functional-test') {
+                    script {
+                        if (isUnix()) {
+                            sh 'mvn verify -Dskip.surefire.tests'
+                        } else {
+                            bat 'mvn verify -Dskip.surefire.tests'
+                        }
+                    }
+                }
+            }
+        }
+
         stage('Archive') {
             steps {
                 archiveArtifacts artifacts: 'target/*.war', fingerprint: true
@@ -206,7 +221,7 @@ pipeline {
 
     post {
         always {
-            junit testResults: 'target/surefire-reports/*.xml, tasks-api-test/target/surefire-reports/*.xml, tasks-functional-tests/target/surefire-reports/*.xml', allowEmptyResults: true
+            junit testResults: 'target/surefire-reports/*.xml, tasks-api-test/target/surefire-reports/*.xml, tasks-functional-tests/target/surefire-reports/*.xml, functional-test/target/failsafe-reports/*.xml', allowEmptyResults: true
             publishHTML(target: [
                 allowMissing: true,
                 alwaysLinkToLastBuild: true,
