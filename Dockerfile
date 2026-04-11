@@ -46,7 +46,7 @@ FROM tomcat:8.5.50-jdk8-openjdk AS tasks-backend-runtime
 ENV DATABASE_HOST=db \
     DATABASE_PORT=5432 \
     DATABASE_USER=postgres \
-    DATABASE_PASSWD=passwd \
+    DATABASE_PASSWD=password \
     DATABASE_UPDATE=none
 
 RUN rm -rf /usr/local/tomcat/webapps/*
