@@ -2,6 +2,7 @@ package br.ce.wcaquino.taskbackend.controller;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -101,5 +102,16 @@ public class TaskControllerTest {
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertSame(todo, response.getBody());
         verify(taskRepo).save(todo);
+    }
+
+    @Test
+    public void deveRemoverTarefaComSucesso() {
+        Long taskId = 1L;
+        doNothing().when(taskRepo).deleteById(taskId);
+
+        ResponseEntity<Void> response = controller.delete(taskId);
+
+        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+        verify(taskRepo).deleteById(taskId);
     }
 }
